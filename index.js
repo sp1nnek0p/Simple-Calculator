@@ -1,7 +1,13 @@
 class Calculator {
-  constructor(previousOperandTextElement, currentOperandTextElement) {
+  constructor(
+    previousOperandTextElement,
+    currentOperandTextElement,
+    memoryOperandTextElement
+  ) {
     this.previousOperandTextElement = previousOperandTextElement;
     this.currentOperandTextElement = currentOperandTextElement;
+    this.memoryOperandTextElement = memoryOperandTextElement;
+    this.memory = '';
     this.clear();
   }
 
@@ -18,6 +24,37 @@ class Calculator {
   appendNumber(number) {
     if (number === '.' && this.currentOperand.includes('.')) return;
     this.currentOperand = this.currentOperand.toString() + number.toString();
+  }
+
+  memoryOperation(operation) {
+    if (this.memory === '') this.memory = 0;
+    switch (operation) {
+      case 'M+': {
+        if (this.currentOperand === '') return;
+        this.memory = parseFloat(this.memory) + parseFloat(this.currentOperand);
+        this.currentOperand = this.memory.toString();
+
+        break;
+      }
+      case 'M-': {
+        if (this.currentOperand === '') return;
+        this.memory = parseFloat(this.memory) - parseFloat(this.currentOperand);
+        this.currentOperand = this.memory.toString();
+
+        break;
+      }
+      case 'MC': {
+        this.memory = 0;
+
+        break;
+      }
+      case 'MR': {
+        this.currentOperand = this.memory.toString();
+        break;
+      }
+      default:
+        return;
+    }
   }
 
   chooseOperation(operation) {
@@ -92,9 +129,13 @@ class Calculator {
     if (this.operation === undefined) {
       this.previousOperandTextElement.innerText = '';
     }
+    memoryOperandTextElement.innerText = `MEMORY: ${this.getDisplayNumber(
+      this.memory
+    )}`;
   }
 }
 
+const memoryButtons = document.querySelectorAll('[data-memory-operator]');
 const numberButtons = document.querySelectorAll('[data-number]');
 const operationButtons = document.querySelectorAll('[data-operation]');
 const equalsButton = document.querySelector('[data-equals]');
@@ -106,10 +147,21 @@ const previousOperandTextElement = document.querySelector(
 const currentOperandTextElement = document.querySelector(
   '[data-current-operand]'
 );
+const memoryOperandTextElement = document.querySelector(
+  '[data-memory-operand]'
+);
 
 const calculator = new Calculator(
   previousOperandTextElement,
-  currentOperandTextElement
+  currentOperandTextElement,
+  memoryOperandTextElement
+);
+
+memoryButtons.forEach((button) =>
+  button.addEventListener('click', () => {
+    calculator.memoryOperation(button.innerText);
+    calculator.updateDisplay();
+  })
 );
 
 numberButtons.forEach((button) =>
